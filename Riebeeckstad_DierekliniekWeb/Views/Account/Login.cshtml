@@ -1,0 +1,100 @@
+﻿@model LoginViewModel
+@{
+    ViewData["Title"] = "Log In";
+    ViewData["BackUrl"] = Url.Action("Index", "Home");
+}
+
+<section class="auth">
+    <div class="auth-header">
+        <partial name="_Brand" />
+    </div>
+
+    @if (TempData["Success"] is string success)
+    {
+        <div class="alert alert-success auth-alert" role="status">
+            <i class="bi bi-check-circle-fill"></i> @success
+        </div>
+    }
+    @if (TempData["Error"] is string error)
+    {
+        <div class="alert alert-warning auth-alert" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @error
+        </div>
+    }
+
+    <h1 class="auth-title auth-title-italic">Welcome Back!</h1>
+    <p class="auth-subtitle">Login to continue caring for your pet</p>
+
+    <form asp-controller="Account" asp-action="Login" method="post" class="auth-form auth-form-narrow" id="loginForm">
+        <input type="hidden" asp-for="ReturnUrl" />
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+
+        <div class="field">
+            <label asp-for="Email" class="visually-hidden"></label>
+            <div class="input-icon">
+                <i class="bi bi-envelope-check-fill"></i>
+                <input asp-for="Email" placeholder="Email Address" autocomplete="username" autofocus />
+            </div>
+            <span asp-validation-for="Email" class="field-error"></span>
+        </div>
+
+        <div class="field">
+            <label asp-for="Password" class="visually-hidden"></label>
+            <div class="input-icon">
+                <i class="bi bi-lock-fill"></i>
+                <input asp-for="Password" placeholder="Password" autocomplete="current-password" />
+                <button type="button" class="toggle-password" data-target="Password" aria-label="Show password">
+                    <i class="bi bi-eye-slash"></i>
+                </button>
+            </div>
+            <span asp-validation-for="Password" class="field-error"></span>
+        </div>
+
+        <div class="terms-row">
+            <div class="terms">
+                <input asp-for="RememberMe" class="form-check-input" />
+                <label asp-for="RememberMe">Remember me</label>
+            </div>
+            <button type="submit" class="btn-pill btn-red btn-sm-pill" id="loginButton">
+                <i class="bi bi-person"></i>
+                <span>Login</span>
+                <i class="bi bi-arrow-right-circle"></i>
+            </button>
+        </div>
+
+        <p class="forgot-link">
+            <a asp-controller="Account" asp-action="ForgotPassword">Forgot Password</a>
+        </p>
+
+        <p class="auth-switch">
+            Don't have an account yet? <a asp-controller="Account" asp-action="Register">Register</a>
+        </p>
+        <p class="auth-note">
+            <i class="bi bi-shield-lock"></i>
+            Staff only. Pet owners should use the Riebeeckstad Dierekliniek mobile app.
+        </p>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const input = document.getElementById(btn.dataset.target);
+                const show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                btn.querySelector('i').className = show ? 'bi bi-eye' : 'bi bi-eye-slash';
+                btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+            });
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', e => {
+            const form = e.target;
+            if (window.jQuery && $(form).valid && !$(form).valid()) return;
+            const button = document.getElementById('loginButton');
+            button.disabled = true;
+            button.querySelector('span').textContent = 'Logging in...';
+        });
+    </script>
+}

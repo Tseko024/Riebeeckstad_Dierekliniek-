@@ -1,0 +1,155 @@
+﻿@model RegisterViewModel
+@{
+    ViewData["Title"] = "Create Your Account";
+    ViewData["BackUrl"] = Url.Action("Index", "Home");
+}
+
+<section class="auth">
+    <div class="auth-header">
+        <partial name="_Brand" />
+        <img class="auth-pets" src="~/images/pets.png" alt="" />
+    </div>
+
+    <h1 class="auth-title">Create Your Account</h1>
+
+    <form asp-controller="Account" asp-action="Register" method="post" class="auth-form" id="registerForm">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+
+        <div class="field">
+            <label asp-for="FullName" class="visually-hidden"></label>
+            <div class="input-icon">
+                <i class="bi bi-person-fill"></i>
+                <input asp-for="FullName" placeholder="Full Name" autocomplete="name" />
+            </div>
+            <span asp-validation-for="FullName" class="field-error"></span>
+        </div>
+
+        <div class="field">
+            <label asp-for="Email" class="visually-hidden"></label>
+            <div class="input-icon">
+                <i class="bi bi-envelope-check-fill"></i>
+                <input asp-for="Email" placeholder="Email Address" autocomplete="email" />
+            </div>
+            <span asp-validation-for="Email" class="field-error"></span>
+        </div>
+
+        <div class="field">
+            <label asp-for="Password" class="visually-hidden"></label>
+            <div class="input-icon">
+                <i class="bi bi-lock-fill"></i>
+                <input asp-for="Password" placeholder="Password" autocomplete="new-password" />
+                <button type="button" class="toggle-password" data-target="Password" aria-label="Show password">
+                    <i class="bi bi-eye-slash"></i>
+                </button>
+            </div>
+            <span asp-validation-for="Password" class="field-error"></span>
+        </div>
+
+        <div class="field">
+            <label asp-for="ConfirmPassword" class="visually-hidden"></label>
+            <div class="input-icon">
+                <i class="bi bi-lock-fill"></i>
+                <input asp-for="ConfirmPassword" placeholder="Confirm Password" autocomplete="new-password" />
+                <button type="button" class="toggle-password" data-target="ConfirmPassword" aria-label="Show password">
+                    <i class="bi bi-eye-slash"></i>
+                </button>
+            </div>
+            <span asp-validation-for="ConfirmPassword" class="field-error"></span>
+        </div>
+
+        <div class="field">
+            <label asp-for="Phone" class="visually-hidden"></label>
+            <div class="input-icon">
+                <i class="bi bi-telephone-fill"></i>
+                <input asp-for="Phone" type="tel" placeholder="Phone number" autocomplete="tel" />
+            </div>
+            <span asp-validation-for="Phone" class="field-error"></span>
+        </div>
+
+        <div class="terms-row">
+            <div class="terms">
+                <input asp-for="AgreeToTerms" class="form-check-input" />
+                <label asp-for="AgreeToTerms">
+                    I agree to the
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms &amp; Conditions</a>
+                    and
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Privacy Policy</a>
+                </label>
+            </div>
+            <button type="submit" class="btn-pill btn-red btn-sm-pill" id="registerButton">
+                <i class="bi bi-person-fill-add"></i>
+                <span>Register</span>
+                <i class="bi bi-arrow-right-circle"></i>
+            </button>
+        </div>
+        <span asp-validation-for="AgreeToTerms" class="field-error d-block"></span>
+
+        <p class="auth-switch">
+            Already have an account? <a asp-controller="Account" asp-action="Login">Log in</a>
+        </p>
+        <p class="auth-note">
+            <i class="bi bi-info-circle"></i>
+            This website is for clinic staff. New accounts need a clinic administrator to activate
+            vet or reception access. Pet owners should use the mobile app.
+        </p>
+    </form>
+</section>
+
+<!-- Terms & Privacy -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsTitle">Terms &amp; Privacy</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Riebeeckstad Dierekliniek uses client and pet information only to manage appointments
+                    and veterinary care. Staff may only access the records they need for their role.
+                </p>
+                <p class="mb-0">
+                    All personal information is handled in line with the Protection of Personal
+                    Information Act (POPIA). Do not share your login details with anyone.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // "I agree" checkbox must be ticked
+        if (window.jQuery && $.validator) {
+            $.validator.addMethod('mustbetrue', (value, element) => element.checked);
+            $.validator.unobtrusive.adapters.addBool('mustbetrue');
+            const form = $('#registerForm');
+            form.removeData('validator').removeData('unobtrusiveValidation');
+            $.validator.unobtrusive.parse(form);
+        }
+
+        // Show / hide password
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const input = document.getElementById(btn.dataset.target);
+                const show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                btn.querySelector('i').className = show ? 'bi bi-eye' : 'bi bi-eye-slash';
+                btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+            });
+        });
+
+        // Prevent double submits
+        document.getElementById('registerForm').addEventListener('submit', e => {
+            const form = e.target;
+            if (window.jQuery && $(form).valid && !$(form).valid()) return;
+            const button = document.getElementById('registerButton');
+            button.disabled = true;
+            button.querySelector('span').textContent = 'Registering...';
+        });
+    </script>
+}
