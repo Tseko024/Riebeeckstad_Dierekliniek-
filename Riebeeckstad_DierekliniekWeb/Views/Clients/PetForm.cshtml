@@ -1,0 +1,90 @@
+﻿@model PetFormModel
+@{
+    ViewData["Title"] = Model.IsNew ? "Add Pet" : $"Edit {Model.Name}";
+    var back = !string.IsNullOrEmpty(Model.ReturnUrl) && Url.IsLocalUrl(Model.ReturnUrl)
+        ? Model.ReturnUrl
+        : Model.IsNew ? Url.Action("Index", new { tab = "pets" })! : Url.Action("Index", "History", new { petId = Model.Id })!;
+
+    var header = new PageHeader
+    {
+        Title = (string)ViewData["Title"]!,
+        Subtitle = Model.IsNew ? "Register a new pet for a client" : "Update the pet's details",
+        BackUrl = back,
+    };
+}
+
+<partial name="_PageHeader" model="header" />
+
+<section class="form-card">
+    <form method="post" asp-action="@(Model.IsNew ? "AddPet" : "EditPet")" asp-route-id="@Model.Id" novalidate>
+        <input type="hidden" asp-for="ReturnUrl" />
+        <div asp-validation-summary="ModelOnly" class="form-alert" role="alert"></div>
+
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="OwnerId"></label>
+                <select asp-for="OwnerId">
+                    <option value="">Choose the owner…</option>
+                    @foreach (var o in Model.Owners)
+                    {
+                        <option value="@o.Value" selected="@(o.Value == Model.OwnerId)">@o.Text</option>
+                    }
+                </select>
+                <span asp-validation-for="OwnerId" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Name"></label>
+                <input asp-for="Name" />
+                <span asp-validation-for="Name" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Species"></label>
+                <select asp-for="Species">
+                    @foreach (var s in Clinic.Species)
+                    {
+                        <option value="@s.Value" selected="@(s.Value == Model.Species)">@s.Text</option>
+                    }
+                </select>
+                <span asp-validation-for="Species" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Breed"></label>
+                <input asp-for="Breed" />
+            </div>
+            <div class="field">
+                <label asp-for="Age"></label>
+                <input asp-for="Age" type="number" min="0" max="60" />
+                <span asp-validation-for="Age" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Microchip"></label>
+                <input asp-for="Microchip" />
+            </div>
+        </div>
+
+        <h2 class="form-section">Medical quick info</h2>
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="BloodType"></label>
+                <input asp-for="BloodType" placeholder="e.g. DEA 1.1+" />
+            </div>
+            <div class="field">
+                <label asp-for="Allergies"></label>
+                <input asp-for="Allergies" placeholder="None known" />
+            </div>
+            <div class="field field-wide">
+                <label asp-for="ChronicConditions"></label>
+                <input asp-for="ChronicConditions" placeholder="None" />
+            </div>
+        </div>
+
+        <div class="form-buttons">
+            <a class="btn-cancel" href="@back">Cancel</a>
+            <button type="submit" class="btn-save">@(Model.IsNew ? "Add Pet" : "Save Changes")</button>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,100 @@
+﻿@model ClientCreateModel
+@{
+    ViewData["Title"] = "Add Client";
+
+    var header = new PageHeader
+    {
+        Title = "Add Client",
+        Subtitle = "Creates the client's account for the mobile app",
+        BackUrl = Url.Action("Index"),
+        BackText = "Back to clients",
+    };
+}
+
+<partial name="_PageHeader" model="header" />
+
+<section class="form-card">
+    <form method="post" asp-action="Create" novalidate>
+        <div asp-validation-summary="ModelOnly" class="form-alert" role="alert"></div>
+
+        <h2 class="form-section">Client details</h2>
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="FullName"></label>
+                <input asp-for="FullName" autocomplete="off" />
+                <span asp-validation-for="FullName" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Phone"></label>
+                <input asp-for="Phone" type="tel" placeholder="071 234 5678" />
+                <span asp-validation-for="Phone" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" type="email" autocomplete="off" />
+                <span asp-validation-for="Email" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="TempPassword"></label>
+                <div class="input-with-button">
+                    <input asp-for="TempPassword" type="text" autocomplete="new-password" id="tempPassword" />
+                    <button type="button" class="btn-soft btn-sm-pill" id="makePassword">Generate</button>
+                </div>
+                <span asp-validation-for="TempPassword" class="field-error"></span>
+                <small class="hint">Give this to the client. They can change it later with "Forgot password".</small>
+            </div>
+        </div>
+
+        <h2 class="form-section">First pet <small>(optional)</small></h2>
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="PetName"></label>
+                <input asp-for="PetName" />
+                <span asp-validation-for="PetName" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="PetSpecies"></label>
+                <select asp-for="PetSpecies">
+                    @foreach (var s in Clinic.Species)
+                    {
+                        <option value="@s.Value" selected="@(s.Value == Model.PetSpecies)">@s.Text</option>
+                    }
+                </select>
+                <span asp-validation-for="PetSpecies" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="PetBreed"></label>
+                <input asp-for="PetBreed" />
+            </div>
+            <div class="field">
+                <label asp-for="PetAge"></label>
+                <input asp-for="PetAge" type="number" min="0" max="60" />
+                <span asp-validation-for="PetAge" class="field-error"></span>
+            </div>
+        </div>
+
+        <div class="form-buttons">
+            <a class="btn-cancel" asp-action="Index">Cancel</a>
+            <button type="submit" class="btn-save" id="saveButton">Add Client</button>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Readable temporary password, e.g. "Paw-4827-kite"
+        document.getElementById('makePassword').addEventListener('click', () => {
+            const words = ['Paw', 'Tail', 'Whisker', 'Bark', 'Purr', 'Kite', 'River', 'Maple', 'Sun', 'Leaf'];
+            const pick = () => words[crypto.getRandomValues(new Uint32Array(1))[0] % words.length];
+            const num = String(crypto.getRandomValues(new Uint32Array(1))[0] % 10000).padStart(4, '0');
+            document.getElementById('tempPassword').value = `${pick()}-${num}-${pick().toLowerCase()}`;
+        });
+        document.querySelector('form').addEventListener('submit', e => {
+            if (window.jQuery && $(e.target).valid && !$(e.target).valid()) return;
+            const b = document.getElementById('saveButton');
+            b.disabled = true;
+            b.textContent = 'Adding…';
+        });
+    </script>
+}

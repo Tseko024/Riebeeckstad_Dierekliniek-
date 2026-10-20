@@ -1,0 +1,89 @@
+﻿@model ClientDetailsModel
+@{
+    var c = Model.Client;
+    var here = Context.Request.Path + Context.Request.QueryString;
+    var header = new PageHeader
+    {
+        Title = c.Name,
+        Subtitle = $"{c.RoleText} · joined {c.CreatedAt?.ToOffset(TimeSpan.FromHours(2)).ToString("d MMM yyyy") ?? "—"}",
+        BackUrl = Url.Action("Index"),
+        BackText = "Back to clients",
+    };
+    header.Buttons.Add(new HeaderButton("Edit", Url.Action("Edit", new { id = c.Id })!, "bi-pencil", Primary: false));
+    header.Buttons.Add(new HeaderButton("Message", Url.Action("Index", "Messages", new { clientId = c.Id })!, "bi-chat-dots", Primary: false));
+    header.Buttons.Add(new HeaderButton("New Booking", Url.Action("Create", "Appointments", new { clientId = c.Id, returnUrl = here })!));
+}
+
+<partial name="_PageHeader" model="header" />
+
+<div class="detail-grid">
+    <section class="dash-card">
+        <h2><i class="bi bi-person-vcard"></i> Contact details</h2>
+        <dl class="details-list">
+            <dt>Phone</dt>
+            <dd>@(c.Phone ?? "—")</dd>
+            <dt>Email</dt>
+            <dd>@(c.Email ?? "—")</dd>
+        </dl>
+    </section>
+
+    <section class="dash-card">
+        <div class="card-head">
+            <h2><partial name="_Paw" model='"inline-paw"' /> Pets (@Model.Pets.Count)</h2>
+            <a class="btn-soft btn-sm-pill" asp-action="AddPet" asp-route-clientId="@c.Id" asp-route-returnUrl="@here"><i class="bi bi-plus-lg"></i> Add Pet</a>
+        </div>
+        @if (Model.Pets.Count == 0)
+        {
+            <p class="empty">No pets yet.</p>
+        }
+        else
+        {
+            <ul class="pet-list">
+                @foreach (var p in Model.Pets)
+                {
+                    <li>
+                        <a asp-controller="History" asp-action="Index" asp-route-petId="@p.Id">
+                            <strong>@p.Name</strong>
+                            <span>@p.SpeciesText@(string.IsNullOrEmpty(p.Breed) ? "" : $" · {p.Breed}") · @p.AgeText</span>
+                        </a>
+                        <a class="icon-btn" title="Edit pet" asp-action="EditPet" asp-route-id="@p.Id" asp-route-returnUrl="@here"><i class="bi bi-pencil"></i></a>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+</div>
+
+<section class="dash-card table-card mt-3">
+    <h2><i class="bi bi-calendar3"></i> Appointments</h2>
+    @if (Model.Appointments.Count == 0)
+    {
+        <p class="empty">No appointments yet.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="appt-table">
+                <thead>
+                    <tr><th>Date</th><th>Time</th><th>Pet</th><th>Service</th><th>Veterinarian</th><th>Status</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in Model.Appointments)
+                    {
+                        <tr>
+                            <td class="text-nowrap">@a.DateDisplay</td>
+                            <td>@a.TimeShort</td>
+                            <td>@a.PetName</td>
+                            <td>@a.ServiceText</td>
+                            <td>@(a.VetName ?? "Unassigned")</td>
+                            <td><span class="status status-@a.StatusKey">@a.StatusText</span></td>
+                            <td class="actions">
+                                <a class="icon-btn" title="Edit" asp-controller="Appointments" asp-action="Edit" asp-route-id="@a.Id" asp-route-returnUrl="@here"><i class="bi bi-pencil"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

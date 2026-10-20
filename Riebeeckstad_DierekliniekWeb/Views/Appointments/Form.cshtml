@@ -1,0 +1,181 @@
+﻿@model AppointmentFormModel
+@{
+    ViewData["Title"] = Model.IsNew ? "New Booking" : "Edit Appointment";
+    var back = !string.IsNullOrEmpty(Model.ReturnUrl) && Url.IsLocalUrl(Model.ReturnUrl) ? Model.ReturnUrl : Url.Action("Index")!;
+    var currentTime = Model.Time;
+
+    var header = new PageHeader
+    {
+        Title = (string)ViewData["Title"]!,
+        Subtitle = Model.IsNew ? "Book an appointment for a client" : "Update appointment details",
+        BackUrl = back,
+        BackText = "Back to appointments",
+    };
+}
+
+<partial name="_PageHeader" model="header" />
+
+<section class="form-card">
+    <form method="post" asp-action="@(Model.IsNew ? "Create" : "Edit")" asp-route-id="@Model.Id" novalidate>
+        <input type="hidden" asp-for="ReturnUrl" />
+        <div asp-validation-summary="ModelOnly" class="form-alert" role="alert"></div>
+
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="ClientId"></label>
+                <select asp-for="ClientId" id="clientSelect">
+                    <option value="">Choose a client…</option>
+                    @foreach (var c in Model.Clients)
+                    {
+                        <option value="@c.Value" selected="@(c.Value == Model.ClientId)">@c.Text</option>
+                    }
+                </select>
+                <span asp-validation-for="ClientId" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="PetId"></label>
+                <select asp-for="PetId" id="petSelect">
+                    <option value="">Choose a pet…</option>
+                    @foreach (var p in Model.Pets)
+                    {
+                        <option value="@p.Id" data-owner="@p.OwnerId" selected="@(p.Id == Model.PetId)">@p.Text</option>
+                    }
+                </select>
+                <span asp-validation-for="PetId" class="field-error"></span>
+                <small class="hint" id="noPets" hidden>
+                    This client has no pets yet.
+                    <a id="addPetLink" asp-controller="Clients" asp-action="AddPet">Add a pet</a>
+                </small>
+            </div>
+
+            <div class="field">
+                <label asp-for="Service"></label>
+                <select asp-for="Service">
+                    @foreach (var s in Clinic.Services)
+                    {
+                        <option value="@s.Value" selected="@(s.Value == Model.Service)">@s.Text</option>
+                    }
+                </select>
+                <span asp-validation-for="Service" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="VetId"></label>
+                <select asp-for="VetId">
+                    <option value="">Unassigned</option>
+                    @foreach (var v in Model.Vets)
+                    {
+                        <option value="@v.Id" selected="@(v.Id == Model.VetId)">@v.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="VetId" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Date"></label>
+                <input asp-for="Date" type="date" id="dateInput" />
+                <span asp-validation-for="Date" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Time"></label>
+                <select asp-for="Time" id="timeSelect">
+                    <option value="">Choose a time…</option>
+                    @foreach (var t in Clinic.AllSlots())
+                    {
+                        <option value="@t" selected="@(t == currentTime)">@t</option>
+                    }
+                    @if (!string.IsNullOrEmpty(currentTime) && !Clinic.AllSlots().Contains(currentTime))
+                    {
+                        <option value="@currentTime" selected>@currentTime</option>
+                    }
+                </select>
+                <span asp-validation-for="Time" class="field-error"></span>
+                <small class="hint">Mon–Fri 08:00–16:30 · Sat 08:00–11:30 · Sun closed</small>
+            </div>
+
+            <div class="field">
+                <label asp-for="Status"></label>
+                <select asp-for="Status">
+                    @foreach (var s in Clinic.Statuses)
+                    {
+                        <option value="@s.Value" selected="@(s.Value == Model.Status)">@s.Text</option>
+                    }
+                </select>
+                <span asp-validation-for="Status" class="field-error"></span>
+            </div>
+
+            <div class="field field-check">
+                <label class="check">
+                    <input asp-for="Urgent" />
+                    <span>Urgent (pet needs to be seen quickly)</span>
+                </label>
+            </div>
+
+            <div class="field field-wide">
+                <label asp-for="Notes"></label>
+                <textarea asp-for="Notes" rows="3" placeholder="Add any additional notes or special instructions for this appointment"></textarea>
+                <span asp-validation-for="Notes" class="field-error"></span>
+            </div>
+        </div>
+
+        <div class="form-buttons">
+            <a class="btn-cancel" href="@back">Cancel</a>
+            <button type="submit" class="btn-save">@(Model.IsNew ? "Save Booking" : "Save Changes")</button>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Only show the chosen client's pets
+        (() => {
+            const client = document.getElementById('clientSelect');
+            const pet = document.getElementById('petSelect');
+            const noPets = document.getElementById('noPets');
+            const addPet = document.getElementById('addPetLink');
+            const addPetBase = addPet.getAttribute('href');
+
+            const filterPets = () => {
+                let visible = 0;
+                for (const opt of pet.options) {
+                    if (!opt.value) continue;
+                    const show = opt.dataset.owner === client.value;
+                    opt.hidden = !show;
+                    opt.disabled = !show;
+                    if (show) visible++;
+                    if (!show && opt.selected) pet.value = '';
+                }
+                noPets.hidden = !client.value || visible > 0;
+                addPet.setAttribute('href', `${addPetBase}?clientId=${encodeURIComponent(client.value)}&returnUrl=${encodeURIComponent(location.pathname + location.search)}`);
+                // Only one pet? choose it
+                if (visible === 1 && !pet.value) {
+                    const only = [...pet.options].find(o => o.value && !o.hidden);
+                    pet.value = only.value;
+                }
+            };
+            client.addEventListener('change', filterPets);
+            filterPets();
+        })();
+
+        // Hide times outside opening hours for the chosen day
+        (() => {
+            const date = document.getElementById('dateInput');
+            const time = document.getElementById('timeSelect');
+            const update = () => {
+                if (!date.value) return;
+                const day = new Date(date.value + 'T00:00').getDay();     // 0 = Sunday, 6 = Saturday
+                const last = day === 6 ? '11:30' : '16:30';
+                for (const opt of time.options) {
+                    if (!opt.value) continue;
+                    const closed = day === 0 || opt.value > last;
+                    opt.hidden = closed && !opt.selected;
+                }
+            };
+            date.addEventListener('change', update);
+            update();
+        })();
+    </script>
+}

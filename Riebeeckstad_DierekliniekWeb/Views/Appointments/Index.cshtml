@@ -1,0 +1,154 @@
+﻿@model AppointmentListModel
+@{
+    var here = Context.Request.Path + Context.Request.QueryString;
+
+    var header = new PageHeader
+    {
+        Title = "Manage Appointments",
+        Subtitle = "View, update and manage appointments",
+        Buttons = { new HeaderButton("New Booking", Url.Action("Create", new { returnUrl = here })!) },
+    };
+}
+
+<partial name="_PageHeader" model="header" />
+
+<!-- Tabs -->
+<nav class="tab-row" aria-label="Appointment lists">
+    @foreach (var t in AppointmentListModel.Tabs)
+    {
+        <a class="@(t.Value == Model.Tab ? "active" : "")" asp-action="Index" asp-route-tab="@t.Value"
+           asp-route-q="@Model.Search" asp-route-service="@Model.Service" asp-route-vet="@Model.VetId">@t.Text</a>
+    }
+</nav>
+
+<!-- Search + filters -->
+<form method="get" asp-action="Index" class="filter-bar">
+    <input type="hidden" name="tab" value="@Model.Tab" />
+    <label class="search-box">
+        <i class="bi bi-search"></i>
+        <span class="visually-hidden">Search</span>
+        <input type="search" name="q" value="@Model.Search" placeholder="Search by client, pet or notes" />
+    </label>
+    <label class="filter-field">
+        <span>Select Date</span>
+        <input type="date" name="date" value="@Model.Date?.ToString("yyyy-MM-dd")" />
+    </label>
+    <label class="filter-field">
+        <span>Service</span>
+        <select name="service">
+            <option value="">All services</option>
+            @foreach (var s in Clinic.Services)
+            {
+                <option value="@s.Value" selected="@(s.Value == Model.Service)">@s.Text</option>
+            }
+        </select>
+    </label>
+    <label class="filter-field">
+        <span>Vet</span>
+        <select name="vet">
+            <option value="">All vets</option>
+            @foreach (var v in Model.Vets)
+            {
+                <option value="@v.Id" selected="@(v.Id == Model.VetId)">@v.Name</option>
+            }
+        </select>
+    </label>
+    <button type="submit" class="btn-filter"><i class="bi bi-funnel"></i> Filter</button>
+    @if (Model.HasFilters)
+    {
+        <a class="clear-link" asp-action="Index" asp-route-tab="@Model.Tab">Clear</a>
+    }
+</form>
+
+<section class="dash-card table-card">
+    @if (Model.Rows.Count == 0)
+    {
+        <p class="empty">No appointments found.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="appt-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Client Name</th>
+                        <th>Pet Name</th>
+                        <th>Services</th>
+                        <th>Veterinarian</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in Model.Rows)
+                    {
+                        <tr class="@(a.UrgencyKey == "urgent" && a.CanCancel ? "row-urgent" : "")">
+                            <td class="text-nowrap">@a.DateDisplay</td>
+                            <td class="fw-semibold">@a.TimeShort</td>
+                            <td>
+                                @if (a.ClientId is not null)
+                                {
+                                    <a asp-controller="Clients" asp-action="Details" asp-route-id="@a.ClientId">@(a.ClientName ?? "—")</a>
+                                }
+                                else
+                                {
+
+                                    @("—")
+                                }
+                            </td>
+                            <td>
+                                @if (a.PetId is not null)
+                                {
+                                    <a asp-controller="History" asp-action="Index" asp-route-petId="@a.PetId">@(a.PetName ?? "—")</a>
+                                }
+                                else
+                                {
+
+                                    @("—")
+                                }
+                                @if (!string.IsNullOrEmpty(a.Species))
+                                {
+                                    <small class="d-block text-muted">@Clinic.SpeciesText(a.Species)</small>
+                                }
+                            </td>
+                            <td>@a.ServiceText</td>
+                            <td>@(a.VetName ?? "Unassigned")</td>
+                            <td>
+                                <span class="status status-@a.StatusKey">@a.StatusText</span>
+                                @if (a.UrgencyKey == "urgent")
+                                {
+                                    <span class="status status-urgent">Urgent</span>
+                                }
+                            </td>
+                            <td class="actions">
+                                <button type="button" class="icon-btn" title="View details"
+                                        data-bs-toggle="modal" data-bs-target="#detailsModal"
+                                        data-client="@a.ClientName" data-phone="@a.ClientPhone"
+                                        data-pet="@a.PetName" data-species="@Clinic.SpeciesText(a.Species)" data-breed="@a.Breed" data-age="@a.Age"
+                                        data-service="@a.ServiceText" data-date="@a.DateDisplay" data-time="@a.TimeShort"
+                                        data-vet="@(a.VetName ?? "Unassigned")" data-status="@a.StatusText"
+                                        data-urgency="@a.UrgencyKey" data-reason="@a.Reason">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <a class="icon-btn" title="Edit" asp-action="Edit" asp-route-id="@a.Id" asp-route-returnUrl="@here"><i class="bi bi-pencil"></i></a>
+                                @if (a.CanCancel)
+                                {
+                                    <form asp-action="Cancel" asp-route-id="@a.Id" method="post"
+                                          onsubmit="return confirm('Cancel this appointment for @(a.PetName)?');">
+                                        <input type="hidden" name="returnUrl" value="@here" />
+                                        <button type="submit" class="icon-btn text-danger" title="Cancel appointment"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    <partial name="_Pager" model="Model.Pager" />
+</section>
+
+<partial name="_AppointmentModal" />

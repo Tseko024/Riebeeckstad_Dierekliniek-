@@ -1,0 +1,270 @@
+﻿@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var dateValue = Model.SelectedDate.ToString("yyyy-MM-dd");
+    var dayHeading = Model.IsToday ? "Today's Appointments" : $"Appointments · {Model.SelectedDate:ddd d MMM yyyy}";
+}
+<!-- Welcome + stats -->
+<section class="welcome-panel">
+    <div class="welcome-row">
+        <div>
+            <h1 class="welcome-title">Welcome Back, @Model.Greeting!</h1>
+            <p class="welcome-sub">Here's what is happening at the clinic today · @Model.Today.ToString("dddd, d MMMM yyyy")</p>
+        </div>
+        <img class="welcome-pets" src="~/images/pets.png" alt="" />
+    </div>
+    <div class="stat-grid">
+        <a class="stat-card stat-mint" asp-controller="Appointments" asp-action="Index" asp-route-tab="today">
+            <i class="bi bi-calendar-check"></i>
+            <strong>@Model.AppointmentsToday</strong>
+            <span>Appointments Today</span>
+            <small>View All</small>
+        </a>
+        <a class="stat-card stat-blue" asp-controller="Clients" asp-action="Index">
+            <i class="bi bi-people"></i>
+            <strong>@Model.TotalClients</strong>
+            <span>Total Clients</span>
+            <small>View Clients</small>
+        </a>
+        <a class="stat-card stat-yellow" asp-controller="Clients" asp-action="Index" asp-route-tab="pets">
+            <partial name="_Paw" model='"stat-paw"' />
+            <strong>@Model.TotalPets</strong>
+            <span>Total Pets</span>
+            <small>View Pets</small>
+        </a>
+        <a class="stat-card stat-pink" asp-controller="Appointments" asp-action="Index" asp-route-tab="pending">
+            <i class="bi bi-bookmark"></i>
+            <strong>@Model.PendingBookings</strong>
+            <span>Pending Bookings</span>
+            <small>To confirm</small>
+        </a>
+    </div>
+</section>
+@if (Model.Error is not null)
+{
+    <div class="alert alert-warning mt-3" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> @Model.Error
+    </div>
+}
+<div class="dash-grid">
+    <!-- Appointments for the selected day -->
+    <section class="dash-card table-card">
+        <div class="card-head">
+            <h2><i class="bi bi-calendar3"></i> @dayHeading</h2>
+            <form method="get" asp-action="Index" class="date-form">
+                <label for="date" class="visually-hidden">Choose a date</label>
+                <input type="date" id="date" name="date" value="@dateValue" onchange="this.form.submit()" />
+                @if (!Model.IsToday)
+                {
+                    <a asp-action="Index" class="today-link">Today</a>
+                }
+            </form>
+        </div>
+        @if (Model.DayAppointments.Count == 0)
+        {
+            <p class="empty">No appointments on this day.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="appt-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Client Name</th>
+                            <th>Pet Name</th>
+                            <th>Service</th>
+                            <th>Veterinarian</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model.DayAppointments)
+                        {
+                            <tr class="@(a.UrgencyKey == "urgent" ? "row-urgent" : "")">
+                                <td class="fw-semibold">@a.TimeShort</td>
+                                <td>@(a.ClientName ?? "—")</td>
+                                <td>
+                                    @(a.PetName ?? "—")
+                                    @if (!string.IsNullOrEmpty(a.Species))
+                                    {
+                                        <small class="d-block text-muted text-capitalize">@a.Species</small>
+                                    }
+                                </td>
+                                <td>@a.ServiceText</td>
+                                <td>@(a.VetName ?? "Unassigned")</td>
+                                <td>
+                                    <span class="status status-@a.StatusKey">@a.StatusText</span>
+                                    @if (a.UrgencyKey == "urgent")
+                                    {
+                                        <span class="status status-urgent" title="Client marked this as urgent">Urgent</span>
+                                    }
+                                </td>
+                                <td class="actions">
+                                    <button type="button" class="icon-btn" title="View details"
+                                            data-bs-toggle="modal" data-bs-target="#detailsModal"
+                                            data-client="@a.ClientName" data-phone="@a.ClientPhone"
+                                            data-pet="@a.PetName" data-species="@a.Species" data-breed="@a.Breed" data-age="@a.Age"
+                                            data-service="@a.ServiceText" data-date="@a.DateDisplay" data-time="@a.TimeShort"
+                                            data-vet="@(a.VetName ?? "Unassigned")" data-status="@a.StatusText"
+                                            data-urgency="@a.UrgencyKey" data-reason="@a.Reason">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <a class="icon-btn" title="Edit" asp-controller="Appointments" asp-action="Edit" asp-route-id="@a.Id"
+                                       asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)"><i class="bi bi-pencil"></i></a>
+                                    @if (a.CanConfirm)
+                                    {
+                                        <form asp-action="UpdateStatus" method="post">
+                                            <input type="hidden" name="id" value="@a.Id" />
+                                            <input type="hidden" name="status" value="Confirmed" />
+                                            <input type="hidden" name="date" value="@dateValue" />
+                                            <button type="submit" class="icon-btn text-success" title="Confirm"><i class="bi bi-check2-circle"></i></button>
+                                        </form>
+                                    }
+                                    @if (a.CanComplete)
+                                    {
+                                        <form asp-action="UpdateStatus" method="post">
+                                            <input type="hidden" name="id" value="@a.Id" />
+                                            <input type="hidden" name="status" value="Completed" />
+                                            <input type="hidden" name="date" value="@dateValue" />
+                                            <button type="submit" class="icon-btn text-primary" title="Mark as completed"><i class="bi bi-clipboard2-check"></i></button>
+                                        </form>
+                                    }
+                                    @if (a.CanCancel)
+                                    {
+                                        <form asp-action="UpdateStatus" method="post"
+                                              onsubmit="return confirm('Cancel this appointment for @(a.PetName)?');">
+                                            <input type="hidden" name="id" value="@a.Id" />
+                                            <input type="hidden" name="status" value="Cancelled" />
+                                            <input type="hidden" name="date" value="@dateValue" />
+                                            <button type="submit" class="icon-btn text-danger" title="Cancel"><i class="bi bi-x-circle"></i></button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        <div class="card-foot">
+            <a asp-controller="Appointments" asp-action="Index">View All <i class="bi bi-chevron-right"></i></a>
+        </div>
+    </section>
+    <!-- Quick actions -->
+    <section class="dash-card quick-card">
+        <h2>Quick Actions</h2>
+        <div class="quick-grid">
+            <a asp-controller="Appointments" asp-action="Create" class="quick q-mint"><i class="bi bi-calendar-plus"></i>Add Appointment</a>
+            <a asp-controller="Clients" asp-action="Create" class="quick q-blue"><i class="bi bi-person-plus"></i>Register Client</a>
+            <a asp-controller="Clients" asp-action="AddPet" class="quick q-yellow"><partial name="_Paw" model='"quick-paw"' />Add Pet</a>
+            <a asp-controller="Treatments" asp-action="Index" class="quick q-pink"><i class="bi bi-folder2-open"></i>View Records</a>
+        </div>
+    </section>
+    <!-- Recent activity -->
+    <section class="dash-card activity-card">
+        <h2><i class="bi bi-clock-history"></i> Recent Activity</h2>
+        @if (Model.RecentActivity.Count == 0)
+        {
+            <p class="empty">No recent bookings yet.</p>
+        }
+        else
+        {
+            <ul class="activity-list">
+                @foreach (var item in Model.RecentActivity)
+                {
+                    <li>
+                        <span class="activity-time">@Labels.TimeAgo(item.When)</span>
+                        <span class="activity-text">@item.Text</span>
+                        <span class="status status-@item.StatusKey">@item.StatusText</span>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+    <!-- Upcoming / important -->
+    <section class="dash-card important-card">
+        <h2><i class="bi bi-bell"></i> Upcoming / Important</h2>
+        <ul class="notice-list">
+            @if (Model.PendingBookings > 0)
+            {
+                <li class="notice notice-pink">
+                    <i class="bi bi-hourglass-split"></i>
+                    @Model.PendingBookings booking@(Model.PendingBookings == 1 ? "" : "s") waiting to be confirmed
+                </li>
+            }
+            @foreach (var u in Model.UrgentUpcoming)
+            {
+                <li class="notice notice-yellow">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Urgent: @(u.PetName ?? "Pet") (@(u.ClientName ?? "client")) · @u.DateDisplay @u.TimeShort
+                    @if (!string.IsNullOrWhiteSpace(u.Reason))
+                    {
+                        <small class="d-block">“@u.Reason”</small>
+                    }
+                </li>
+            }
+            @if (Model.PendingBookings == 0 && Model.UrgentUpcoming.Count == 0)
+            {
+                <li class="notice notice-blue"><i class="bi bi-check2-all"></i> Nothing needs attention right now.</li>
+            }
+        </ul>
+    </section>
+</div>
+<!-- Appointment details -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailsTitle">Appointment details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="details-list">
+                    <dt>Client</dt>
+                    <dd data-field="client"></dd>
+                    <dt>Phone</dt>
+                    <dd data-field="phone"></dd>
+                    <dt>Pet</dt>
+                    <dd data-field="pet"></dd>
+                    <dt>Service</dt>
+                    <dd data-field="service"></dd>
+                    <dt>When</dt>
+                    <dd data-field="when"></dd>
+                    <dt>Vet</dt>
+                    <dd data-field="vet"></dd>
+                    <dt>Status</dt>
+                    <dd data-field="status"></dd>
+                    <dt>Urgency</dt>
+                    <dd data-field="urgency"></dd>
+                    <dt>Symptoms</dt>
+                    <dd data-field="reason"></dd>
+                </dl>
+                <p class="small text-muted mb-0">
+                    Urgency is the client's own indication — it is not a diagnosis.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        // Fill the details pop-up from the clicked row
+        document.getElementById('detailsModal').addEventListener('show.bs.modal', e => {
+            const d = e.relatedTarget.dataset;
+            const set = (field, value) =>
+                e.target.querySelector(`[data-field="${field}"]`).textContent = value || '—';
+            const petBits = [d.species, d.breed, d.age ? `${d.age} yr` : ''].filter(Boolean).join(', ');
+            set('client', d.client);
+            set('phone', d.phone);
+            set('pet', petBits ? `${d.pet} (${petBits})` : d.pet);
+            set('service', d.service);
+            set('when', `${d.date} at ${d.time}`);
+            set('vet', d.vet);
+            set('status', d.status);
+            set('urgency', d.urgency ? d.urgency[0].toUpperCase() + d.urgency.slice(1) : '');
+            set('reason', d.reason);
+        });
+    </script>
+}

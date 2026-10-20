@@ -1,0 +1,146 @@
+﻿@model PetHistoryModel
+@{
+    var p = Model.Pet;
+    var here = Context.Request.Path + Context.Request.QueryString;
+    var header = new PageHeader
+    {
+        Title = "Pet History",
+        Subtitle = "View complete history for each pet",
+        BackUrl = Url.Action("Index", "Clients", new { tab = "pets" }),
+        BackText = "Back to pets",
+    };
+    header.Buttons.Add(new HeaderButton("Edit Pet", Url.Action("EditPet", "Clients", new { id = p.Id, returnUrl = here })!, "bi-pencil", Primary: false));
+    header.Buttons.Add(new HeaderButton("Book", Url.Action("Create", "Appointments", new { petId = p.Id, returnUrl = here })!, "bi-calendar-plus", Primary: false));
+    if (Model.CanWrite)
+    {
+        header.Buttons.Add(new HeaderButton("New Record", Url.Action("Create", "Treatments", new { petId = p.Id, returnUrl = here })!));
+    }
+    string Or(string? v, string fallback = "—") => string.IsNullOrWhiteSpace(v) ? fallback : v;
+}
+
+<partial name="_PageHeader" model="header" />
+
+<!-- Pet card -->
+<section class="pet-card">
+    <span class="pet-avatar pet-avatar-lg"><partial name="_Paw" model='"avatar-paw"' /></span>
+    <div class="pet-card-main">
+        <h2>@p.Name</h2>
+        <dl class="pet-facts">
+            <dt>Species:</dt>
+            <dd>@Or(p.SpeciesText)</dd>
+            <dt>Breed:</dt>
+            <dd>@Or(p.Breed)</dd>
+            <dt>Age:</dt>
+            <dd>@p.AgeText</dd>
+            <dt>Microchip:</dt>
+            <dd>@Or(p.Microchip)</dd>
+        </dl>
+    </div>
+    <div class="pet-card-owner">
+        <dl class="pet-facts">
+            <dt>Owner:</dt>
+            <dd>
+                @if (p.OwnerId is not null)
+                {
+                    <a asp-controller="Clients" asp-action="Details" asp-route-id="@p.OwnerId">@Or(p.OwnerName)</a>
+                }
+            </dd>
+            <dt>Contact:</dt>
+            <dd>@Or(p.OwnerPhone)</dd>
+            <dt>Email:</dt>
+            <dd>@Or(p.OwnerEmail)</dd>
+            <dt>Visits:</dt>
+            <dd>@Model.AppointmentCount appointments · @Model.RecordCount records</dd>
+        </dl>
+    </div>
+</section>
+
+<!-- Tabs -->
+<nav class="tab-row tab-row-wide" aria-label="History sections">
+    @foreach (var t in PetHistoryModel.Tabs)
+    {
+        <a class="@(t.Value == Model.Tab ? "active" : "")" asp-action="Index" asp-route-petId="@p.Id" asp-route-tab="@t.Value">@t.Text</a>
+    }
+</nav>
+
+<div class="history-grid">
+    <section class="dash-card table-card">
+        <h2>@(Model.Tab == "overview" ? "Recent History" : PetHistoryModel.Tabs.First(t => t.Value == Model.Tab).Text)</h2>
+        @if (Model.Entries.Count == 0)
+        {
+            <p class="empty">Nothing recorded yet.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="appt-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Details</th>
+                            <th>Veterinarian</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in Model.Entries)
+                        {
+                            <tr>
+                                <td class="text-nowrap">@e.DateDisplay</td>
+                                <td class="fw-semibold">
+                                    @e.Type
+                                    @if (e.IsAppointment)
+                                    {
+                                        <span class="status status-@e.StatusKey d-block mt-1">@e.Status</span>
+                                    }
+                                </td>
+                                <td>
+                                    @e.Details
+                                    @if (Model.Tab == "medications" || (!e.IsAppointment && !string.IsNullOrEmpty(e.Medications)))
+                                    {
+                                        <small class="d-block text-muted"><i class="bi bi-capsule"></i> @e.Medications</small>
+                                    }
+                                    @if (Model.Tab == "notes" && !e.IsAppointment && !string.IsNullOrEmpty(e.Notes))
+                                    {
+                                        <small class="d-block text-muted"><i class="bi bi-journal-text"></i> @e.Notes</small>
+                                    }
+                                </td>
+                                <td>@(e.Vet ?? "—")</td>
+                                <td class="actions">
+                                    @if (!e.IsAppointment)
+                                    {
+                                        <button type="button" class="icon-btn" title="View details"
+                                                data-bs-toggle="modal" data-bs-target="#recordModal"
+                                                data-date="@e.DateDisplay" data-pet="@p.Name" data-owner="@p.OwnerName"
+                                                data-type="@e.Type" data-diagnosis="@e.Diagnosis" data-treatment="@e.Details"
+                                                data-medications="@e.Medications" data-notes="@e.Notes" data-vet="@e.Vet">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    }
+                                    @if (e.EditUrl is not null)
+                                    {
+                                        <a class="icon-btn" title="Edit" href="@e.EditUrl"><i class="bi bi-pencil"></i></a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <aside class="dash-card quick-info">
+        <h2>Quick Info</h2>
+        <ul>
+            <li><i class="bi bi-droplet"></i><span><strong>Blood Type</strong>@Or(p.BloodType, "Unknown")</span></li>
+            <li><i class="bi bi-exclamation-diamond"></i><span><strong>Allergies</strong>@Or(p.Allergies, "None known")</span></li>
+            <li><i class="bi bi-heart-pulse"></i><span><strong>Chronic Conditions</strong>@Or(p.ChronicConditions, "None")</span></li>
+            <li><i class="bi bi-capsule"></i><span><strong>Current Medication</strong>@Model.CurrentMedication</span></li>
+        </ul>
+        <a class="small" asp-controller="Clients" asp-action="EditPet" asp-route-id="@p.Id" asp-route-returnUrl="@here">Update quick info</a>
+    </aside>
+</div>
+
+<partial name="_RecordModal" />

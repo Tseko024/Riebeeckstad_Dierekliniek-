@@ -1,0 +1,141 @@
+﻿@model ClientListModel
+@{
+    var here = Context.Request.Path + Context.Request.QueryString;
+    var header = new PageHeader { Title = "Clients/Pets", Subtitle = "Manage clients and their pets" };
+    header.Buttons.Add(new HeaderButton("Add Client", Url.Action("Create")!));
+    header.Buttons.Add(new HeaderButton("Add Pet", Url.Action("AddPet", new { returnUrl = here })!, "bi-plus-lg", Primary: false));
+}
+
+<partial name="_PageHeader" model="header" />
+
+<nav class="tab-row" aria-label="Clients or pets">
+    <a class="@(Model.Tab == "clients" ? "active" : "")" asp-action="Index" asp-route-tab="clients">All Clients</a>
+    <a class="@(Model.Tab == "pets" ? "active" : "")" asp-action="Index" asp-route-tab="pets">All Pets</a>
+</nav>
+
+<form method="get" asp-action="Index" class="filter-bar">
+    <input type="hidden" name="tab" value="@Model.Tab" />
+    <label class="search-box">
+        <i class="bi bi-search"></i>
+        <span class="visually-hidden">Search</span>
+        <input type="search" name="q" value="@Model.Search"
+               placeholder="@(Model.Tab == "clients" ? "Search by name, email, phone or pet" : "Search by pet, breed, owner or microchip")" />
+    </label>
+    @if (Model.Tab == "pets")
+    {
+        <label class="filter-field">
+            <span>Species</span>
+            <select name="species">
+                <option value="">All species</option>
+                @foreach (var s in Clinic.Species)
+                {
+                    <option value="@s.Value" selected="@(s.Value == Model.Species)">@s.Text</option>
+                }
+            </select>
+        </label>
+    }
+    <button type="submit" class="btn-filter"><i class="bi bi-funnel"></i> Filter</button>
+    @if (!string.IsNullOrEmpty(Model.Search) || !string.IsNullOrEmpty(Model.Species))
+    {
+        <a class="clear-link" asp-action="Index" asp-route-tab="@Model.Tab">Clear</a>
+    }
+</form>
+
+<section class="dash-card table-card">
+    @if (Model.Tab == "clients")
+    {
+        @if (Model.Clients.Count == 0)
+        {
+            <p class="empty">No clients found.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="appt-table">
+                    <thead>
+                        <tr>
+                            <th>Client Name</th>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Pets</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model.Clients)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@c.Name</td>
+                                <td class="text-nowrap">@(c.Phone ?? "—")</td>
+                                <td>@(c.Email ?? "—")</td>
+                                <td>
+                                    <span class="pet-count"><partial name="_Paw" model='"inline-paw"' /> @c.PetCount @(c.PetCount == 1 ? "Pet" : "Pets")</span>
+                                    @if (!string.IsNullOrEmpty(c.PetNames))
+                                    {
+                                        <small class="d-block text-muted">@c.PetNames</small>
+                                    }
+                                </td>
+                                <td class="actions">
+                                    <a class="icon-btn" title="View client" asp-action="Details" asp-route-id="@c.Id"><i class="bi bi-eye"></i></a>
+                                    <a class="icon-btn" title="Edit client" asp-action="Edit" asp-route-id="@c.Id"><i class="bi bi-pencil"></i></a>
+                                    <a class="icon-btn" title="Book appointment" asp-controller="Appointments" asp-action="Create" asp-route-clientId="@c.Id" asp-route-returnUrl="@here"><i class="bi bi-calendar-plus"></i></a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+    else
+    {
+        @if (Model.Pets.Count == 0)
+        {
+            <p class="empty">No pets found.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="appt-table">
+                    <thead>
+                        <tr>
+                            <th>Pet Name</th>
+                            <th>Species</th>
+                            <th>Breed</th>
+                            <th>Age</th>
+                            <th>Owner</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.Pets)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@p.Name</td>
+                                <td>@p.SpeciesText</td>
+                                <td>@(p.Breed ?? "—")</td>
+                                <td>@p.AgeText</td>
+                                <td>
+                                    @if (p.OwnerId is not null)
+                                    {
+                                        <a asp-action="Details" asp-route-id="@p.OwnerId">@(p.OwnerName ?? "—")</a>
+                                    }
+                                </td>
+                                <td class="actions">
+                                    <a class="icon-btn" title="Pet history" asp-controller="History" asp-action="Index" asp-route-petId="@p.Id"><i class="bi bi-eye"></i></a>
+                                    <a class="icon-btn" title="Edit pet" asp-action="EditPet" asp-route-id="@p.Id" asp-route-returnUrl="@here"><i class="bi bi-pencil"></i></a>
+                                    <form asp-action="DeletePet" asp-route-id="@p.Id" method="post"
+                                          onsubmit="return confirm('Delete @p.Name? This cannot be undone.');">
+                                        <input type="hidden" name="returnUrl" value="@here" />
+                                        <button type="submit" class="icon-btn text-danger" title="Delete pet"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+    <partial name="_Pager" model="Model.Pager" />
+</section>

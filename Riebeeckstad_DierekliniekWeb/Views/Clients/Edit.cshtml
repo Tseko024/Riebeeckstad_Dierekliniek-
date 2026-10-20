@@ -1,0 +1,46 @@
+﻿@model ClientEditModel
+@{
+    ViewData["Title"] = "Edit Client";
+
+    var header = new PageHeader
+    {
+        Title = "Edit Client",
+        Subtitle = Model.Email,
+        BackUrl = Url.Action("Details", new { id = Model.Id }),
+        BackText = "Back to client",
+    };
+}
+
+<partial name="_PageHeader" model="header" />
+
+<section class="form-card">
+    <form method="post" asp-action="Edit" asp-route-id="@Model.Id" novalidate>
+        <div asp-validation-summary="ModelOnly" class="form-alert" role="alert"></div>
+        <input type="hidden" asp-for="Email" />
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="FullName"></label>
+                <input asp-for="FullName" />
+                <span asp-validation-for="FullName" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Phone"></label>
+                <input asp-for="Phone" type="tel" />
+                <span asp-validation-for="Phone" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label>Email Address</label>
+                <input value="@Model.Email" disabled />
+                <small class="hint">The email is the client's login and can't be changed here.</small>
+            </div>
+        </div>
+        <div class="form-buttons">
+            <a class="btn-cancel" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+            <button type="submit" class="btn-save">Save Changes</button>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

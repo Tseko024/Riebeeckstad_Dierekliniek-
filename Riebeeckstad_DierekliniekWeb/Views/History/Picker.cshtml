@@ -1,0 +1,42 @@
+﻿@model PetPickerModel
+
+@{
+    var header = new PageHeader { Title = "Pet History", Subtitle = "Choose a pet to see its complete history" };
+}
+
+<partial name="_PageHeader" model="header" />
+
+<form method="get" asp-action="Index" class="filter-bar">
+    <label class="search-box">
+        <i class="bi bi-search"></i>
+        <span class="visually-hidden">Search</span>
+        <input type="search" name="q" value="@Model.Search" placeholder="Search by pet, owner, breed or microchip" autofocus />
+    </label>
+    <button type="submit" class="btn-filter"><i class="bi bi-search"></i> Search</button>
+    @if (!string.IsNullOrEmpty(Model.Search))
+    {
+        <a class="clear-link" asp-action="Index">Clear</a>
+    }
+</form>
+
+@if (Model.Pets.Count == 0)
+{
+    <p class="empty">No pets found.</p>
+}
+else
+{
+    <div class="pet-grid">
+        @foreach (var p in Model.Pets)
+        {
+            <a class="pet-tile" asp-action="Index" asp-route-petId="@p.Id">
+                <span class="pet-avatar"><partial name="_Paw" model='"avatar-paw"' /></span>
+                <span class="pet-tile-text">
+                    <strong>@p.Name</strong>
+                    <small>@p.SpeciesText@(string.IsNullOrEmpty(p.Breed) ? "" : $" · {p.Breed}")</small>
+                    <small class="text-muted">Owner: @(p.OwnerName ?? "—")</small>
+                </span>
+            </a>
+        }
+    </div>
+}
+<partial name="_Pager" model="Model.Pager" />
