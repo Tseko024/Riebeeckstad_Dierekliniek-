@@ -1,0 +1,5 @@
+﻿@{
+    // Public pages (Welcome, Register, Login) use the site layout; everything else is the staff area.
+    var controller = ViewContext.RouteData.Values["controller"] as string;
+    Layout = controller is "Home" or "Account" ? "_Layout" : "_StaffLayout";
+}
