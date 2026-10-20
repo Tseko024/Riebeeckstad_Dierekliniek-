@@ -1,0 +1,666 @@
+/* =====================================================================
+   Riebeeckstad Dierekliniek — staff web app
+   Colours and layout follow the Figma "ASP.NET" screens and the Flutter app.
+   ===================================================================== */
+
+:root {
+    --topbar: #0b1f45; /* dark navy top bar */
+    --navy: #2e3175; /* footer band, headings */
+    --navy-text: #323376; /* same as Flutter AppColors.navy */
+    --red: #97080f; /* buttons, hearts (Flutter AppColors.red) */
+    --red-heart: #c8102e;
+    --grey: #d9d9d9; /* hero band, cards, inputs */
+    --grey-dark: #9a9a9a;
+    --text: #1e1e1e;
+    --white: #ffffff;
+}
+
+html {
+    min-height: 100%;
+}
+
+
+
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: var(--white);
+    color: var(--text);
+    font-family: 'Gelasio', Georgia, serif;
+}
+
+a {
+    color: var(--navy-text);
+}
+
+    a:hover {
+        color: var(--red);
+    }
+
+.text-navy {
+    color: var(--navy-text) !important;
+}
+
+.text-red {
+    color: var(--red-heart) !important;
+}
+
+/* ---------------- Top bar ---------------- */
+.topbar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    background: var(--topbar);
+    color: var(--white);
+    padding: 6px 16px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.topbar-location {
+    text-align: center;
+}
+
+.topbar-right {
+    text-align: right;
+}
+
+    .topbar-right a,
+    .topbar-back {
+        color: var(--white);
+        font-size: 1.1rem;
+        margin-left: 10px;
+        text-decoration: none;
+    }
+
+.topbar-back {
+    margin-left: 0;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.topbar a:hover {
+    color: #cfd6ff;
+}
+
+.page {
+    flex: 1;
+}
+
+/* ---------------- Brand (logo badge + name) ---------------- */
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+
+.brand-mark {
+    width: clamp(70px, 9vw, 120px);
+    height: auto;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+}
+
+.brand-name {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #0b2a5b;
+    font-size: clamp(1.3rem, 2.6vw, 2.2rem);
+    letter-spacing: 0.5px;
+}
+
+.brand-sub {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: #0b2a5b;
+    font-size: clamp(0.55rem, 0.9vw, 0.8rem);
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+
+.brand-dot {
+    color: var(--red-heart);
+    font-size: 0.6em;
+    vertical-align: middle;
+}
+
+/* ---------------- Welcome: brand row + nav ---------------- */
+.brand-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 18px clamp(16px, 4vw, 48px);
+}
+
+.pill-nav {
+    display: flex;
+    gap: 4px;
+    background: var(--grey);
+    border-radius: 6px;
+    padding: 4px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+}
+
+    .pill-nav a {
+        padding: 4px 14px;
+        border-radius: 4px;
+        text-decoration: none;
+        color: var(--navy-text);
+    }
+
+        .pill-nav a.active,
+        .pill-nav a:hover {
+            background: var(--white);
+            color: var(--navy-text);
+        }
+
+/* ---------------- Welcome: hero ---------------- */
+.hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    background: var(--grey);
+    padding: 24px clamp(16px, 5vw, 64px) 0;
+    min-height: 260px;
+}
+
+.hero-text {
+    padding-bottom: 24px;
+}
+
+.hero-title {
+    font-family: 'Montserrat', sans-serif;
+    font-style: italic;
+    font-weight: 800;
+    color: var(--navy-text);
+    font-size: clamp(1.8rem, 3.6vw, 3rem);
+    line-height: 1.15;
+    margin: 0 0 20px;
+}
+
+.hero-heart {
+    color: var(--red-heart);
+    font-size: 0.9em;
+}
+
+.hero-pets {
+    width: clamp(180px, 28vw, 360px);
+    height: auto;
+    align-self: flex-end;
+}
+
+.hero-register {
+    margin: 8px 0 0;
+    font-size: 0.85rem;
+}
+
+    .hero-register a {
+        color: var(--red);
+        font-weight: 600;
+    }
+
+/* ---------------- Buttons ---------------- */
+.btn-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    min-width: 220px;
+    padding: 9px 18px;
+    border: none;
+    border-radius: 999px;
+    color: var(--white);
+    font-family: 'Gelasio', serif;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: filter 0.15s, transform 0.05s;
+}
+
+    .btn-pill:hover {
+        color: var(--white);
+        filter: brightness(1.15);
+    }
+
+    .btn-pill:active {
+        transform: translateY(1px);
+    }
+
+    .btn-pill:disabled {
+        opacity: 0.7;
+        cursor: wait;
+    }
+
+.btn-navy {
+    background: var(--navy-text);
+}
+
+.btn-red {
+    background: var(--red);
+}
+
+.btn-sm-pill {
+    min-width: 150px;
+    padding: 7px 14px;
+    font-size: 0.95rem;
+}
+
+/* ---------------- Welcome: feature cards ---------------- */
+.feature-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: clamp(12px, 2vw, 32px);
+    padding: 24px clamp(16px, 5vw, 64px);
+}
+
+.feature-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--grey);
+    border-radius: 8px;
+    padding: 16px 18px;
+    text-decoration: none;
+    color: var(--text);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+    .feature-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        color: var(--text);
+    }
+
+    .feature-card strong {
+        display: block;
+        font-family: 'Montserrat', sans-serif;
+        font-style: italic;
+        font-weight: 700;
+        color: var(--navy-text);
+        font-size: 1.05rem;
+    }
+
+    .feature-card small {
+        display: block;
+        font-style: italic;
+        font-size: 0.85rem;
+        line-height: 1.3;
+    }
+
+.feature-icon {
+    font-size: 2.4rem;
+    flex-shrink: 0;
+}
+
+svg.feature-icon {
+    width: 2.6rem;
+    height: 2.6rem;
+    fill: #111;
+}
+
+/* ---------------- Welcome: help ---------------- */
+.help {
+    padding: 8px clamp(16px, 5vw, 64px) 32px;
+}
+
+    .help h2 {
+        font-family: 'DM Serif Display', serif;
+        color: var(--navy-text);
+        font-size: 1.6rem;
+    }
+
+.help-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+    .help-grid > div {
+        border: 1px solid var(--grey);
+        border-radius: 10px;
+        padding: 16px;
+    }
+
+    .help-grid i {
+        font-size: 1.6rem;
+        color: var(--navy-text);
+    }
+
+    .help-grid h3 {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--navy-text);
+        margin: 8px 0 4px;
+    }
+
+    .help-grid p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+/* ---------------- Auth pages (Register / Login) ---------------- */
+.auth {
+    padding: 18px clamp(16px, 4vw, 48px) 32px;
+}
+
+.auth-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.auth-pets {
+    width: clamp(100px, 14vw, 180px);
+    height: auto;
+}
+
+.auth-title {
+    font-family: 'DM Serif Display', serif;
+    color: var(--navy-text);
+    text-align: center;
+    font-size: clamp(1.4rem, 2.4vw, 2rem);
+    margin: 8px 0 18px;
+}
+
+.auth-alert {
+    max-width: 640px;
+    margin: 12px auto;
+}
+
+.auth-form {
+    max-width: 620px;
+    margin: 0 auto;
+}
+
+.field {
+    margin-bottom: 12px;
+}
+
+.input-icon {
+    display: flex;
+    align-items: center;
+    background: var(--grey);
+    border-radius: 2px;
+    padding: 0 12px;
+    border: 2px solid transparent;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+    .input-icon:focus-within {
+        border-color: var(--navy-text);
+        background: #e6e6e6;
+    }
+
+    .input-icon > i {
+        color: #222;
+        font-size: 1.05rem;
+        margin-right: 10px;
+    }
+
+    .input-icon input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        padding: 9px 0;
+        font-family: 'Gelasio', serif;
+        font-size: 1rem;
+        color: var(--text);
+    }
+
+        .input-icon input::placeholder {
+            color: var(--grey-dark);
+        }
+
+        .input-icon input.input-validation-error {
+            color: var(--red);
+        }
+
+.toggle-password {
+    border: none;
+    background: none;
+    color: #444;
+    padding: 4px;
+}
+
+.field-error {
+    color: var(--red);
+    font-size: 0.82rem;
+    margin-left: 4px;
+}
+
+.field:has(.input-validation-error) .input-icon {
+    border-color: var(--red);
+}
+
+.terms-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.terms {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+    .terms .form-check-input {
+        margin-top: 0.2rem;
+        border-color: #555;
+    }
+
+        .terms .form-check-input:checked {
+            background-color: var(--navy-text);
+            border-color: var(--navy-text);
+        }
+
+    .terms a {
+        color: var(--red);
+    }
+
+.auth-switch {
+    text-align: center;
+    margin: 18px 0 6px;
+    font-size: 0.9rem;
+}
+
+    .auth-switch a {
+        color: var(--red);
+        font-weight: 600;
+    }
+
+.auth-note {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #555;
+    margin: 0;
+}
+
+/* ---------------- "Why choose" band ---------------- */
+.why-band {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    background: var(--navy);
+    color: var(--white);
+    padding: 14px clamp(16px, 4vw, 48px);
+    overflow: hidden;
+}
+
+.why-content {
+    flex: 1;
+}
+
+.why-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: clamp(1rem, 1.8vw, 1.4rem);
+    text-align: center;
+    margin: 0 0 10px;
+}
+
+.why-list {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 16px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+    .why-list li {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.9rem;
+    }
+
+    .why-list i {
+        font-size: 1.4rem;
+    }
+
+.why-oval {
+    position: relative;
+    background: var(--white);
+    color: var(--navy);
+    border-radius: 50%;
+    padding: 18px 36px;
+    transform: rotate(-12deg);
+    font-family: 'Kaushan Script', cursive;
+    font-size: clamp(0.85rem, 1.2vw, 1.05rem);
+    text-align: center;
+    flex-shrink: 0;
+}
+
+svg.why-oval-paw {
+    width: 22px;
+    height: 22px;
+    fill: #111;
+    position: absolute;
+    right: 20px;
+    bottom: 4px;
+}
+
+/* ---------------- Small screens ---------------- */
+@media (max-width: 640px) {
+    .topbar {
+        grid-template-columns: auto 1fr auto;
+        font-size: 0.75rem;
+    }
+
+    .hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .hero-pets {
+        align-self: center;
+    }
+
+    .why-band {
+        flex-direction: column;
+    }
+
+    .why-oval {
+        transform: rotate(-6deg);
+    }
+
+    .terms-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-sm-pill {
+        width: 100%;
+    }
+}
+
+/* ---------------- Login / Forgot password ---------------- */
+.auth-title-italic {
+    font-style: italic;
+    font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+    margin-bottom: 4px;
+}
+
+.auth-subtitle {
+    text-align: center;
+    font-style: italic;
+    font-size: clamp(1rem, 1.6vw, 1.35rem);
+    color: var(--text);
+    margin: 0 0 22px;
+}
+
+.auth-form-narrow {
+    max-width: 520px;
+}
+
+.forgot-link {
+    text-align: right;
+    margin: 10px 0 0;
+}
+
+    .forgot-link a {
+        color: var(--red);
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+        .forgot-link a:hover {
+            text-decoration: underline;
+        }
+
+/* =====================================================================
+   Same page background as the Flutter app (AppColors.background #E4E8EB)
+   ===================================================================== */
+:root {
+    --page-bg: #e4e8eb;
+}
+
+body {
+    background: var(--page-bg);
+}
+
+/* Login / Register boxes: white and rounded, like the Flutter app's text fields */
+.input-icon {
+    background: var(--white);
+    border-radius: 999px;
+    border: 1px solid #d3d8dd;
+    padding: 2px 18px;
+}
+
+    .input-icon:focus-within {
+        background: var(--white);
+        border-color: var(--navy-text);
+        box-shadow: 0 0 0 3px rgba(50, 51, 118, 0.15);
+    }
+
+    .input-icon > i {
+        color: var(--navy-text);
+    }
