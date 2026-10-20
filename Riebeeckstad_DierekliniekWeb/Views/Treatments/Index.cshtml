@@ -1,0 +1,103 @@
+﻿@model TreatmentListModel
+@{
+    var here = Context.Request.Path + Context.Request.QueryString;
+    var header = new PageHeader { Title = "Treatment Records", Subtitle = "Manage and view all treatment records" };
+    if (Model.CanWrite)
+    {
+        header.Buttons.Add(new HeaderButton("Add Treatment", Url.Action("Create", new { returnUrl = here })!));
+    }
+}
+
+<partial name="_PageHeader" model="header" />
+
+@if (!Model.CanWrite)
+{
+    <p class="info-note"><i class="bi bi-info-circle"></i> Only veterinarians can add or edit treatment records.</p>
+}
+
+<form method="get" asp-action="Index" class="filter-bar">
+    <label class="search-box">
+        <i class="bi bi-search"></i>
+        <span class="visually-hidden">Search</span>
+        <input type="search" name="q" value="@Model.Search" placeholder="Search by treatment, details or pet" />
+    </label>
+    <label class="filter-field">
+        <span>Select Date</span>
+        <input type="date" name="date" value="@Model.Date?.ToString("yyyy-MM-dd")" />
+    </label>
+    <label class="filter-field">
+        <span>Type</span>
+        <select name="type">
+            <option value="">All types</option>
+            @foreach (var t in Clinic.RecordTypes)
+            {
+                <option value="@t.Value" selected="@(t.Value == Model.Type)">@t.Text</option>
+            }
+        </select>
+    </label>
+    <button type="submit" class="btn-filter"><i class="bi bi-funnel"></i> Filter</button>
+    @if (!string.IsNullOrEmpty(Model.Search) || Model.Date is not null || Model.Type is not null)
+    {
+        <a class="clear-link" asp-action="Index">Clear</a>
+    }
+</form>
+
+<section class="dash-card table-card">
+    @if (Model.Rows.Count == 0)
+    {
+        <p class="empty">No treatment records found.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="appt-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Pet</th>
+                        <th>Owner</th>
+                        <th>Treatment</th>
+                        <th>Details</th>
+                        <th>Veterinarian</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.Rows)
+                    {
+                        <tr>
+                            <td class="text-nowrap">@r.DateDisplay</td>
+                            <td><a asp-controller="History" asp-action="Index" asp-route-petId="@r.PetId">@r.PetLabel</a></td>
+                            <td>@(r.OwnerName ?? "—")</td>
+                            <td>@r.TypeText</td>
+                            <td>
+                                @r.Treatment
+                                @if (!string.IsNullOrEmpty(r.Diagnosis))
+                                {
+                                    <small class="d-block text-muted">@r.Diagnosis</small>
+                                }
+                            </td>
+                            <td>@(r.VetName ?? "—")</td>
+                            <td class="actions">
+                                <button type="button" class="icon-btn" title="View details"
+                                        data-bs-toggle="modal" data-bs-target="#recordModal"
+                                        data-date="@r.DateDisplay" data-pet="@r.PetLabel" data-owner="@r.OwnerName"
+                                        data-type="@r.TypeText" data-diagnosis="@r.Diagnosis" data-treatment="@r.Treatment"
+                                        data-medications="@r.Medications" data-notes="@r.Notes" data-vet="@r.VetName">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                @if (Model.CanWrite)
+                                {
+                                    <a class="icon-btn" title="Edit" asp-action="Edit" asp-route-id="@r.Id" asp-route-returnUrl="@here"><i class="bi bi-pencil"></i></a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    <partial name="_Pager" model="Model.Pager" />
+</section>
+
+<partial name="_RecordModal" />

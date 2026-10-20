@@ -1,0 +1,22 @@
+﻿@model PageHeader
+@* Page title + subtitle + pets picture + main button, like the Figma staff screens *@
+<div class="page-top">
+    <div class="page-heading">
+        @if (Model.BackUrl is not null)
+        {
+            <a class="back-link" href="@Model.BackUrl"><i class="bi bi-arrow-left"></i> @Model.BackText</a>
+        }
+        <h1>@Model.Title</h1>
+        @if (Model.Subtitle is not null)
+        {
+            <p>@Model.Subtitle</p>
+        }
+    </div>
+    <img class="page-pets" src="~/images/pets.png" alt="" />
+    <div class="page-actions">
+        @foreach (var b in Model.Buttons)
+        {
+            <a class="@(b.Primary ? "btn-add" : "btn-soft")" href="@b.Url"><i class="bi @b.Icon"></i> @b.Text</a>
+        }
+    </div>
+</div>

@@ -1,0 +1,118 @@
+﻿@model MessagesModel
+@{
+    string When(DateTimeOffset t)
+    {
+        var local = t.ToOffset(TimeSpan.FromHours(2));
+        return DateOnly.FromDateTime(local.DateTime) == Clinic.Today ? local.ToString("HH:mm") : local.ToString("d MMM HH:mm");
+    }
+
+    var header = new PageHeader { Title = "Messages", Subtitle = "Talk to clients about their bookings and pets" };
+}
+
+<partial name="_PageHeader" model="header" />
+
+<div class="chat-shell @(Model.Client is null ? "" : "has-open")">
+    <!-- Conversations -->
+    <aside class="chat-list">
+        <form method="get" asp-action="Index" class="chat-search">
+            <label class="search-box">
+                <i class="bi bi-search"></i>
+                <span class="visually-hidden">Search conversations</span>
+                <input type="search" name="q" value="@Model.Search" placeholder="Search conversations" />
+            </label>
+        </form>
+
+        <form method="get" asp-action="Index" class="chat-new">
+            <label for="newClient" class="visually-hidden">Start a conversation with</label>
+            <select id="newClient" name="clientId" onchange="if (this.value) this.form.submit()">
+                <option value="">+ New message to…</option>
+                @foreach (var c in Model.Clients)
+                {
+                    <option value="@c.Value">@c.Text</option>
+                }
+            </select>
+        </form>
+
+        @if (Model.Threads.Count == 0)
+        {
+            <p class="empty px-2">No conversations yet.</p>
+        }
+        <ul>
+            @foreach (var t in Model.Threads)
+            {
+                <li>
+                    <a class="@(t.ClientId == Model.Client?.Id ? "active" : "")" asp-action="Index" asp-route-clientId="@t.ClientId">
+                        <span class="chat-name">
+                            @t.Name
+                            @if (t.Unread > 0)
+                            {
+                                <span class="unread" title="Unread messages">@t.Unread</span>
+                            }
+                        </span>
+                        <span class="chat-preview">@(t.LastFromClient ? "" : "You: ")@t.LastBody</span>
+                        <span class="chat-time">@When(t.LastAt)</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    </aside>
+
+    <!-- Open conversation -->
+    <section class="chat-thread">
+        @if (Model.Client is null)
+        {
+            <div class="chat-empty">
+                <i class="bi bi-chat-dots"></i>
+                <p>Choose a conversation, or start a new message to a client.</p>
+            </div>
+        }
+        else
+        {
+            <header class="chat-head">
+                <a class="chat-back" asp-action="Index" aria-label="Back to conversations"><i class="bi bi-arrow-left"></i></a>
+                <div>
+                    <strong>@Model.Client.Name</strong>
+                    <small>@Model.Client.Phone · @Model.Client.Email</small>
+                </div>
+                <a class="btn-soft btn-sm-pill ms-auto" asp-controller="Clients" asp-action="Details" asp-route-id="@Model.Client.Id">View client</a>
+            </header>
+
+            <div class="chat-messages" id="chatMessages">
+                @if (Model.Messages.Count == 0)
+                {
+                    <p class="empty text-center">No messages yet. Say hello!</p>
+                }
+                @foreach (var m in Model.Messages)
+                {
+                    <div class="bubble @(m.FromClient ? "from-client" : "from-clinic")">
+                        <p>@m.Body</p>
+                        <small>@Model.SenderName(m) · @When(m.CreatedAt)</small>
+                    </div>
+                }
+            </div>
+
+            <form method="post" asp-action="Send" class="chat-reply">
+                <input type="hidden" name="clientId" value="@Model.Client.Id" />
+                <label for="reply" class="visually-hidden">Message</label>
+                <textarea id="reply" name="reply" rows="2" maxlength="2000" placeholder="Type a message…" required>@Model.Reply</textarea>
+                <button type="submit" class="btn-save"><i class="bi bi-send"></i> Send</button>
+            </form>
+            <span asp-validation-for="Reply" class="field-error d-block px-3 pb-2"></span>
+        }
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        // Start at the newest message; Enter sends, Shift+Enter makes a new line
+        const box = document.getElementById('chatMessages');
+        if (box) box.scrollTop = box.scrollHeight;
+        const reply = document.getElementById('reply');
+        reply?.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey && reply.value.trim()) {
+                e.preventDefault();
+                reply.form.requestSubmit();
+            }
+        });
+    </script>
+}

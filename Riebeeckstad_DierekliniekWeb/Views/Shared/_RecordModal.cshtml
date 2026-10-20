@@ -1,0 +1,41 @@
+﻿@* Pop-up with a treatment record's details. Buttons need data-bs-target="#recordModal" and data-* values. *@
+<div class="modal fade" id="recordModal" tabindex="-1" aria-labelledby="recordTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="recordTitle">Treatment record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="details-list">
+                    <dt>Date</dt>
+                    <dd data-field="date"></dd>
+                    <dt>Pet</dt>
+                    <dd data-field="pet"></dd>
+                    <dt>Owner</dt>
+                    <dd data-field="owner"></dd>
+                    <dt>Type</dt>
+                    <dd data-field="type"></dd>
+                    <dt>Diagnosis</dt>
+                    <dd data-field="diagnosis"></dd>
+                    <dt>Treatment</dt>
+                    <dd data-field="treatment"></dd>
+                    <dt>Medications</dt>
+                    <dd data-field="medications"></dd>
+                    <dt>Notes</dt>
+                    <dd data-field="notes"></dd>
+                    <dt>Vet</dt>
+                    <dd data-field="vet"></dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('recordModal').addEventListener('show.bs.modal', e => {
+        const d = e.relatedTarget.dataset;
+        for (const field of ['date', 'pet', 'owner', 'type', 'diagnosis', 'treatment', 'medications', 'notes', 'vet']) {
+            e.target.querySelector(`[data-field="${field}"]`).textContent = d[field] || '—';
+        }
+    });
+</script>

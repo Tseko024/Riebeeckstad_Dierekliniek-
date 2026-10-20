@@ -1,0 +1,81 @@
+﻿@{
+    ViewData["Title"] = "Welcome";
+    ViewData["ShowSocial"] = true;
+}
+
+<!-- Logo + small navigation -->
+<section class="brand-row">
+    <partial name="_Brand" />
+    <nav class="pill-nav" aria-label="Main">
+        <a asp-controller="Home" asp-action="Index" class="active">Home</a>
+        <a asp-controller="Account" asp-action="Login">Dashboard</a>
+        <a href="#help">Help</a>
+    </nav>
+</section>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-text">
+        <h1 class="hero-title">
+            Healthy Pets.<br />
+            Healthier Life. <i class="bi bi-heart-fill hero-heart"></i>
+        </h1>
+
+        <a class="btn-pill btn-navy hero-login" asp-controller="Account" asp-action="Login">
+            <i class="bi bi-person-fill"></i>
+            <span>Log In</span>
+            <i class="bi bi-chevron-right"></i>
+        </a>
+        <p class="hero-register">
+            Don't have an account yet? <a asp-controller="Account" asp-action="Register">Register</a>
+        </p>
+    </div>
+    <img class="hero-pets" src="~/images/pets.png" alt="A happy dog and cat" />
+</section>
+
+<!-- Feature cards -->
+<section class="feature-row">
+    <a class="feature-card" asp-controller="Account" asp-action="Login">
+        <i class="bi bi-calendar3 feature-icon text-navy"></i>
+        <span>
+            <strong>Book An Appointment</strong>
+            <small>Quick and easy online booking</small>
+        </span>
+    </a>
+    <a class="feature-card" href="#help">
+        <partial name="_Paw" model='"feature-icon"' />
+        <span>
+            <strong>Our Services</strong>
+            <small>Comprehensive veterinary care for all pets</small>
+        </span>
+    </a>
+    <a class="feature-card" href="#help">
+        <i class="bi bi-heart-pulse-fill feature-icon text-red"></i>
+        <span>
+            <strong>Pet Care Tips</strong>
+            <small>Helpful advice to keep your pets healthy and happy</small>
+        </span>
+    </a>
+</section>
+
+<!-- Help -->
+<section id="help" class="help">
+    <h2>How it works</h2>
+    <div class="help-grid">
+        <div>
+            <i class="bi bi-phone"></i>
+            <h3>Pet owners</h3>
+            <p>Book appointments, add pets and describe symptoms in the Riebeeckstad Dierekliniek mobile app.</p>
+        </div>
+        <div>
+            <i class="bi bi-pc-display"></i>
+            <h3>Clinic staff</h3>
+            <p>Vets and receptionists log in here to view, confirm, reschedule or cancel bookings and manage records.</p>
+        </div>
+        <div>
+            <i class="bi bi-telephone"></i>
+            <h3>Need help?</h3>
+            <p>Phone the clinic on <a href="tel:0573881409">057 388 1409</a> or visit us at 138 Mc Lean St, Riebeeckstad, Welkom.</p>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,51 @@
+﻿@* Pop-up with an appointment's details. Buttons need data-bs-target="#detailsModal" and data-* values. *@
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailsTitle">Appointment details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="details-list">
+                    <dt>Client</dt>
+                    <dd data-field="client"></dd>
+                    <dt>Phone</dt>
+                    <dd data-field="phone"></dd>
+                    <dt>Pet</dt>
+                    <dd data-field="pet"></dd>
+                    <dt>Service</dt>
+                    <dd data-field="service"></dd>
+                    <dt>When</dt>
+                    <dd data-field="when"></dd>
+                    <dt>Vet</dt>
+                    <dd data-field="vet"></dd>
+                    <dt>Status</dt>
+                    <dd data-field="status"></dd>
+                    <dt>Urgency</dt>
+                    <dd data-field="urgency"></dd>
+                    <dt>Notes</dt>
+                    <dd data-field="reason"></dd>
+                </dl>
+                <p class="small text-muted mb-0">Urgency is the client's own indication — it is not a diagnosis.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('detailsModal').addEventListener('show.bs.modal', e => {
+        const d = e.relatedTarget.dataset;
+        const set = (field, value) =>
+            e.target.querySelector(`[data-field="${field}"]`).textContent = value || '—';
+        const petBits = [d.species, d.breed, d.age ? `${d.age} yr` : ''].filter(Boolean).join(', ');
+        set('client', d.client);
+        set('phone', d.phone);
+        set('pet', petBits ? `${d.pet} (${petBits})` : d.pet);
+        set('service', d.service);
+        set('when', `${d.date} at ${d.time}`);
+        set('vet', d.vet);
+        set('status', d.status);
+        set('urgency', d.urgency ? d.urgency[0].toUpperCase() + d.urgency.slice(1) : '');
+        set('reason', d.reason);
+    });
+</script>

@@ -1,0 +1,80 @@
+﻿@model TreatmentFormModel
+@{
+    ViewData["Title"] = Model.IsNew ? "Add Treatment" : "Edit Treatment";
+    var back = !string.IsNullOrEmpty(Model.ReturnUrl) && Url.IsLocalUrl(Model.ReturnUrl) ? Model.ReturnUrl : Url.Action("Index")!;
+
+    var header = new PageHeader
+    {
+        Title = (string)ViewData["Title"]!,
+        Subtitle = Model.IsNew ? "Record a visit, treatment or vaccination" : "Update this treatment record",
+        BackUrl = back,
+        BackText = "Back",
+    };
+}
+
+<partial name="_PageHeader" model="header" />
+
+<section class="form-card">
+    <form method="post" asp-action="@(Model.IsNew ? "Create" : "Edit")" asp-route-id="@Model.Id" novalidate>
+        <input type="hidden" asp-for="ReturnUrl" />
+        <div asp-validation-summary="ModelOnly" class="form-alert" role="alert"></div>
+
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="PetId"></label>
+                <select asp-for="PetId">
+                    <option value="">Choose a pet…</option>
+                    @foreach (var p in Model.Pets)
+                    {
+                        <option value="@p.Value" selected="@(p.Value == Model.PetId)">@p.Text</option>
+                    }
+                </select>
+                <span asp-validation-for="PetId" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="VisitDate"></label>
+                <input asp-for="VisitDate" type="date" max="@Clinic.Today.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="VisitDate" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="RecordType"></label>
+                <select asp-for="RecordType">
+                    @foreach (var t in Clinic.RecordTypes)
+                    {
+                        <option value="@t.Value" selected="@(t.Value == Model.RecordType)">@t.Text</option>
+                    }
+                </select>
+                <span asp-validation-for="RecordType" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Diagnosis"></label>
+                <input asp-for="Diagnosis" placeholder="e.g. Skin irritation" />
+                <span asp-validation-for="Diagnosis" class="field-error"></span>
+            </div>
+            <div class="field field-wide">
+                <label asp-for="Treatment"></label>
+                <input asp-for="Treatment" placeholder="e.g. Annual FVRCP vaccine" />
+                <span asp-validation-for="Treatment" class="field-error"></span>
+            </div>
+            <div class="field field-wide">
+                <label asp-for="Medications"></label>
+                <input asp-for="Medications" placeholder="Name, dose and how long — leave empty if none" />
+                <span asp-validation-for="Medications" class="field-error"></span>
+            </div>
+            <div class="field field-wide">
+                <label asp-for="Notes"></label>
+                <textarea asp-for="Notes" rows="3" placeholder="Follow-up instructions, observations…"></textarea>
+                <span asp-validation-for="Notes" class="field-error"></span>
+            </div>
+        </div>
+
+        <div class="form-buttons">
+            <a class="btn-cancel" href="@back">Cancel</a>
+            <button type="submit" class="btn-save">@(Model.IsNew ? "Save Record" : "Save Changes")</button>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

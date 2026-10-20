@@ -1,0 +1,12 @@
+﻿@model string
+<div class="page-heading">
+    <h1>@(ViewData["Title"] ?? "Something went wrong")</h1>
+</div>
+
+<div class="alert alert-warning mt-3" role="alert">
+    <i class="bi bi-exclamation-triangle-fill"></i> @Model
+</div>
+<p>
+    <a href="@(Context.Request.Path + Context.Request.QueryString)" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-clockwise"></i> Try again</a>
+    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-link btn-sm">Back to Dashboard</a>
+</p>

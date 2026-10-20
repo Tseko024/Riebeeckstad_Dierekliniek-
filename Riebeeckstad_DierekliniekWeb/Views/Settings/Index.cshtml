@@ -1,0 +1,117 @@
+﻿@model SettingsModel
+
+@{
+    var header = new PageHeader { Title = "Settings", Subtitle = "Your profile, password and staff access" };
+}
+<partial name="_PageHeader" model="header" />
+
+<div asp-validation-summary="ModelOnly" class="form-alert" role="alert"></div>
+
+<div class="settings-grid">
+    <!-- My profile -->
+    <section class="form-card" id="profile">
+        <h2 class="form-section"><i class="bi bi-person-circle"></i> My profile</h2>
+        <form method="post" asp-action="Profile" novalidate>
+            <div class="field">
+                <label asp-for="Profile.FullName"></label>
+                <input asp-for="Profile.FullName" />
+                <span asp-validation-for="Profile.FullName" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Profile.Phone"></label>
+                <input asp-for="Profile.Phone" type="tel" />
+                <span asp-validation-for="Profile.Phone" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label>Email Address</label>
+                <input value="@Model.Profile.Email" disabled />
+            </div>
+            <div class="form-buttons">
+                <button type="submit" class="btn-save">Save Profile</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- Change password -->
+    <section class="form-card" id="password">
+        <h2 class="form-section"><i class="bi bi-shield-lock"></i> Change password</h2>
+        <form method="post" asp-action="Password" novalidate autocomplete="off">
+            <div class="field">
+                <label asp-for="Password.CurrentPassword"></label>
+                <input asp-for="Password.CurrentPassword" autocomplete="current-password" value="" />
+                <span asp-validation-for="Password.CurrentPassword" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Password.NewPassword"></label>
+                <input asp-for="Password.NewPassword" autocomplete="new-password" value="" />
+                <span asp-validation-for="Password.NewPassword" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Password.ConfirmPassword"></label>
+                <input asp-for="Password.ConfirmPassword" autocomplete="new-password" value="" />
+                <span asp-validation-for="Password.ConfirmPassword" class="field-error"></span>
+            </div>
+            <div class="form-buttons">
+                <button type="submit" class="btn-save">Change Password</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- Staff access -->
+    <section class="form-card settings-wide" id="access">
+        <h2 class="form-section"><i class="bi bi-people"></i> Staff access</h2>
+        @if (Model.IsVet)
+        {
+            <p class="hint mb-3">
+                A person must first register (web or mobile app). Then enter their email here to give them
+                veterinarian or receptionist access to this website. Choose "Client" to remove access.
+            </p>
+            <form method="post" asp-action="Access" class="access-form" novalidate>
+                <div class="field">
+                    <label asp-for="Access.Email"></label>
+                    <input asp-for="Access.Email" type="email" />
+                    <span asp-validation-for="Access.Email" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Access.Role"></label>
+                    <select asp-for="Access.Role">
+                        @foreach (var r in StaffAccessFormModel.Roles)
+                        {
+                            <option value="@r.Value" selected="@(r.Value == Model.Access.Role)">@r.Text</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn-save">Update Access</button>
+            </form>
+        }
+        else
+        {
+            <p class="hint">Only veterinarians can give or remove staff access.</p>
+        }
+
+        <div class="table-responsive mt-3">
+            <table class="appt-table">
+                <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th></tr></thead>
+                <tbody>
+                    @foreach (var s in Model.Staff)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@s.Name @(s.Id == Model.CurrentUserId ? "(you)" : "")</td>
+                            <td>@s.Email</td>
+                            <td>@(s.Phone ?? "—")</td>
+                            <td>@s.RoleText</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    @if (Model.Section != "profile")
+    {
+        <script>document.getElementById('@Model.Section')?.scrollIntoView({ block: 'start' });</script>
+    }
+}
